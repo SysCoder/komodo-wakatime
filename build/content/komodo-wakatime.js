@@ -57,7 +57,7 @@ if (typeof(ko) == 'undefined') {
 if (typeof(ko.extensions) == 'undefined') {
     ko.extensions = {};
 }
-
+ko.dialogs.prompt("[WakaTime] Enter your wakatime.com api key:");
 // Make todo extension namespace and add our js code
 ko.extensions.todo = {};
 (function() {
