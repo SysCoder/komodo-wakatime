@@ -1,10 +1,16 @@
 
-
+var action_frequency = 2 //This can be received from the user settings
 var time = 0;
 var api_key = '';
+var currProfPath = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties) .get("PrefD", Components.interfaces.nsILocalFile) .path
+currProfPath
+var PLUGIN_DIR = currProfPath + '/extensions/komodo-wakatime@wakatime.com';
+var API_CLIENT = PLUGIN_DIR + '/components/wakatime/wakatime-cli.py';
 var view = null;
 
 function initExtension() {
+  toggleOn();
+  alert("start")
   var prefs = Components.classes['@activestate.com/koPrefService;1'].getService(Components.interfaces.koIPrefService).prefs;
   pref_name = 'wakatime_api_key';
   if (!prefs.hasStringPref(pref_name) || prefs.getStringPref(pref_name) === '') {
@@ -23,11 +29,11 @@ function getFileName() {
 
 function enoughTimePassed() {
   d = new Date();
-  if ((d.getTime - time) > 10000) {
+  if ((d.getTime() - time) > action_frequency * 60) {
     time = d.getTime()
-    return false
+    return true;
   }
-  return true
+  return false;
 }
 
 function sendDataToAPI(writeFlag) {
@@ -35,13 +41,15 @@ function sendDataToAPI(writeFlag) {
   cmdWriteFlag = writeFlag ? '--write' : '';
   fileName = getFileName();
   alert(fileName);
-  var cmd = 'python /Users/marcelluspelcher/.vim/bundle/vim-wakatime/plugin/packages/wakatime/wakatime-cli.py ' + cmdWriteFlag + ' --file ' + fileName + ' --plugin komodo/0.1';
+  var cmd = 'python ' + API_CLIENT + cmdWriteFlag + ' --file ' + fileName + ' --plugin komodo/0.1';
   var runSvc = Components.classes["@activestate.com/koRunService;1"].createInstance(Components.interfaces.koIRunService);
   var process = runSvc.RunAndNotify(cmd, '', '', '');
 }
 
 function keyPressEvent() {
-  sendDataToAPI();
+  if (enoughTimePassed()) {
+    sendDataToAPI();
+  }
 }
 
 function fileSaveEvent() {
@@ -50,33 +58,23 @@ function fileSaveEvent() {
 }
 
 
-function startKeyPressEvent() {
-  if (enoughTimePassed()) {
-      alert(time);
-      keyPressEvent();
-  }
-}
-
 function toggleOn() {
   view = ko.views.manager.currentView;
   view.addEventListener('keypress', keyPressEvent, true);
-  view.addEventListener('file_saved', fileSaveEvent, true);
-  view.addEventListener('view_closing', toggleOff, true);
 }
 
 function toggleOff() {
   view.removeEventListener('keypress', keyPressEvent, true);
-  view.removeEventListener('file_saved', fileSaveEvent, true);
-  view.removeEventListener('view_closing', toggleOff, true);
 }
 
 function toggleOffThenOn() {
   toggleOff();
-  toggleOn();
+  //FIXME: I don't like this! I think I can rework it so it will trigger off of an event.
+  setTimeout(toggleOn, 1);
 }
 
-
-initExtension();
+initExtension()
+window.addEventListener('file_saved', fileSaveEvent, true);
 window.addEventListener('current_view_changed', toggleOffThenOn, true);
+window.addEventListener('komodo-ui-started', initExtension, true);
 
-#komodo-ui-started  Sent after Komodo startup UI initialization is complete. Sent to the window.
