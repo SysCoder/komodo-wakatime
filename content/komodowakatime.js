@@ -7,7 +7,6 @@ var komodoWakatime = {
     keyPressListener: null,
 
     onLoad: function (thisObject) {
-        thisObject.promptForAPIKey();
         var prefs = Components.classes['@activestate.com/koPrefService;1']
           .getService(Components.interfaces.koIPrefService)
           .prefs;
@@ -35,7 +34,6 @@ var komodoWakatime = {
         return thisObject.fileName;
     },
     enoughTimePassed: function (thisObject) {
-        alert("Check for time");
         var d = new Date();
         if ((d.getTime() - thisObject.time) > thisObject.action_frequency * 60000) {
             thisObject.time = d.getTime();
@@ -44,7 +42,6 @@ var komodoWakatime = {
         return false;
     },
     sendDataToAPI: function (thisObject, writeFlag) {
-        alert("send data");
         writeFlag = typeof writeFlag !== 'undefined' ? writeFlag : false;
         var cmdWriteFlag = writeFlag ? '--write' : '';
         var fileName = thisObject.getFileName(thisObject);
@@ -54,7 +51,6 @@ var komodoWakatime = {
         var runSvc = Components.classes["@activestate.com/koRunService;1"]
           .createInstance(Components.interfaces.koIRunService);
         var process = runSvc.RunAndNotify(cmd, '', '', '');
-        alert(cmd);
     },
     keyPressEvent: function (thisObject) {
         if (thisObject.enoughTimePassed(thisObject)) {
@@ -65,7 +61,6 @@ var komodoWakatime = {
         thisObject.sendDataToAPI(thisObject, true);
     },
     initViewListener: function (thisObject) {
-        alert("initViewListener");
         if (thisObject.view !== null) {
             thisObject.view.removeEventListener('keypress', thisObject.keyPressListener, true);
         }
@@ -83,7 +78,6 @@ var komodoWakatime = {
         };
         thisObject.view = event.originalTarget;
         thisObject.view.addEventListener('keypress', thisObject.keyPressListener, true);
-        alert(thisObject.fileName);
     }
 };
 
